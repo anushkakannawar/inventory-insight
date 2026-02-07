@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Package,
@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Loader2,
   Sparkles,
+  BarChart3,
 } from 'lucide-react';
 import { useInventory } from '@/context/InventoryContext';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -20,7 +21,9 @@ import { RiskGauge } from '@/components/dashboard/RiskGauge';
 import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { skus, analyses, metrics, isLoading, loadSampleData, runAnalysis } = useInventory();
+  const [selectedSkuIds, setSelectedSkuIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (skus.length > 0 && analyses.size === 0 && !isLoading) {
@@ -189,8 +192,29 @@ export default function Dashboard() {
 
         {/* SKU Table */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Inventory Details</h2>
-          <SKUTable skus={skus} analyses={analyses} />
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Inventory Details</h2>
+            {selectedSkuIds.length >= 2 && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+              >
+                <Button 
+                  onClick={() => navigate(`/compare?ids=${selectedSkuIds.join(',')}`)}
+                  className="gap-2"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  Compare ({selectedSkuIds.length})
+                </Button>
+              </motion.div>
+            )}
+          </div>
+          <SKUTable 
+            skus={skus} 
+            analyses={analyses}
+            selectedIds={selectedSkuIds}
+            onSelectionChange={setSelectedSkuIds}
+          />
         </div>
       </div>
     </AppLayout>

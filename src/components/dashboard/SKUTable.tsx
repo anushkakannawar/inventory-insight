@@ -14,10 +14,13 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface SKUTableProps {
   skus: SKUData[];
   analyses: Map<string, RiskAnalysis>;
+  selectedIds?: string[];
+  onSelectionChange?: (ids: string[]) => void;
 }
 
 const riskBadgeStyles = {
@@ -32,7 +35,24 @@ const riskIcons = {
   high: AlertCircle,
 };
 
-export function SKUTable({ skus, analyses }: SKUTableProps) {
+export function SKUTable({ skus, analyses, selectedIds = [], onSelectionChange }: SKUTableProps) {
+  const toggleSelection = (id: string) => {
+    if (!onSelectionChange) return;
+    const newSelection = selectedIds.includes(id)
+      ? selectedIds.filter(sid => sid !== id)
+      : [...selectedIds, id];
+    onSelectionChange(newSelection);
+  };
+
+  const toggleSelectAll = () => {
+    if (!onSelectionChange) return;
+    if (selectedIds.length === skus.length) {
+      onSelectionChange([]);
+    } else {
+      onSelectionChange(skus.map(s => s.id));
+    }
+  };
+
   if (skus.length === 0) {
     return (
       <div className="rounded-xl border bg-card p-12 text-center">
@@ -50,6 +70,16 @@ export function SKUTable({ skus, analyses }: SKUTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
+            {onSelectionChange && (
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={selectedIds.length === skus.length && skus.length > 0}
+                  indeterminate={selectedIds.length > 0 && selectedIds.length < skus.length}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all SKUs"
+                />
+              </TableHead>
+            )}
             <TableHead className="font-semibold">SKU</TableHead>
             <TableHead className="font-semibold">Product</TableHead>
             <TableHead className="text-right font-semibold">Stock</TableHead>
@@ -70,6 +100,7 @@ export function SKUTable({ skus, analyses }: SKUTableProps) {
             const UnderstockIcon = riskIcons[understockLevel];
             const OverstockIcon = riskIcons[overstockLevel];
             const DeadStockIcon = riskIcons[deadStockLevel];
+            const isSelected = selectedIds.includes(sku.id);
 
             return (
               <motion.tr
@@ -77,8 +108,17 @@ export function SKUTable({ skus, analyses }: SKUTableProps) {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="group hover:bg-muted/30 transition-colors"
+                className={cn('group hover:bg-muted/30 transition-colors', isSelected && 'bg-muted/50')}
               >
+                {onSelectionChange && (
+                  <TableCell className="w-12">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleSelection(sku.id)}
+                      aria-label={`Select ${sku.name || sku.id}`}
+                    />
+                  </TableCell>
+                )}
                 <TableCell className="font-mono text-sm">{sku.id}</TableCell>
                 <TableCell className="font-medium">{sku.name}</TableCell>
                 <TableCell className="text-right">{sku.currentInventory.toLocaleString()}</TableCell>

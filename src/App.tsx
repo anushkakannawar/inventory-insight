@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import InputPage from "./pages/InputPage";
 import SKUDetailPage from "./pages/SKUDetailPage";
 import SimulatorPage from "./pages/SimulatorPage";
+import ComparePage from "./pages/ComparePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/input" element={<InputPage />} />
             <Route path="/sku/:skuId" element={<SKUDetailPage />} />
             <Route path="/simulator" element={<SimulatorPage />} />
+            <Route path="/compare" element={<ComparePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
